@@ -1,9 +1,37 @@
 "use client";
 
 import { useState } from "react";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { CreateUserPayload, createUser } from "../../server/queries";
+import { resolve } from "path";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+const schema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+  username: z.string(),
+  firstname: z.string(),
+  lastname: z.string(),
+});
+
+type FormFields = z.infer<typeof schema>;
 
 export default function Home() {
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<FormFields>({
+    defaultValues: {
+      email: "test@email.com",
+      username: "Ahmad Naser Almuhtar",
+      password: "12345678",
+    },
+    resolver: zodResolver(schema),
+  });
+
   const initialState = {
     username: "",
     firstname: "",
@@ -24,47 +52,78 @@ export default function Home() {
     setUserData((prev) => ({ ...prev, [e.target.id]: e.target.value }));
   };
 
+  const onSubmit: SubmitHandler<FormFields> = async (data) => {
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      console.log(data);
+    } catch (error) {
+      setError("root", { message: "email is taken" });
+    }
+  };
+
   return (
     <>
-      <form className="flex flex-col" method="POST" onSubmit={handleCreateUser}>
+      <form
+        className="flex flex-col max-w-full mx-auto justify-center items-center space-y-1 text-center"
+        method="POST"
+        onSubmit={handleSubmit(onSubmit)}
+      >
         <label htmlFor="username">username:</label>
         <input
+          {...register("username", { required: true })}
+          className="ring-1 ring-black"
           type="text"
           id="username"
-          placeholder="enter username"
-          onChange={handleChange}
         />
+        {errors.username && (
+          <div className="text-red-600">{errors.username.message}</div>
+        )}
         <label htmlFor="password">password:</label>
         <input
-          type="text"
+          {...register("password")}
+          className="ring-1 ring-black"
+          type="password"
           id="password"
-          placeholder="enter password"
-          onChange={handleChange}
         />
+        {errors.password && (
+          <div className="text-red-600">{errors.password.message}</div>
+        )}
         <label htmlFor="email">email:</label>
         <input
+          {...register("email")}
+          className="ring-1 ring-black"
           type="text"
           id="email"
-          placeholder="enter email"
-          onChange={handleChange}
         />
+        {errors.email && (
+          <div className="text-red-600">{errors.email.message}</div>
+        )}
         <label htmlFor="firstname">firstname:</label>
         <input
+          {...register("firstname")}
+          className="ring-1 ring-black"
           type="text"
           id="firstname"
-          placeholder="enter firstname"
-          onChange={handleChange}
         />
         <label htmlFor="lastname">lastname:</label>
         <input
+          {...register("lastname")}
+          className="ring-1 ring-black"
           type="text"
           id="lastname"
-          placeholder="enter lastname"
-          onChange={handleChange}
         />
-        <button type="submit" className="border ring-indigo-400 ring-2">
-          add username
-        </button>
+        <div className="pt-4">
+          <button
+            disabled={isSubmitting}
+            type="submit"
+            className="border ring-indigo-400 ring-2"
+          >
+            {isSubmitting ? "Loading..." : "Create"}
+          </button>
+          {errors.root && (
+            <div className="text-red-600">{errors.root.message}</div>
+          )}
+        </div>
       </form>
     </>
   );
