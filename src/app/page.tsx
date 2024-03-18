@@ -1,78 +1,70 @@
 "use client";
 
 import { useState } from "react";
-import { CreateUserPayload } from "../../server/queries";
+import { CreateUserPayload, createUser } from "../../server/queries";
 
 export default function Home() {
-  const [userData, setUserData] = useState<CreateUserPayload>({
+  const initialState = {
     username: "",
     firstname: "",
     lastname: "",
     email: "",
     password: "",
-  });
+  };
 
-  const createUser = async (e: React.FormEvent) => {
+  const [userData, setUserData] = useState<CreateUserPayload>(initialState);
+
+  const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     await createUser(userData);
-    setUserData({
-      username: "",
-      firstname: "",
-      lastname: "",
-      email: "",
-      password: "",
-    });
+    setUserData(initialState);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUserData((prev) => ({ ...prev, [e.target.id]: e.target.value }));
   };
 
   return (
     <>
-      <form onSubmit={createUser}>
+      <form className="flex flex-col" method="POST" onSubmit={handleCreateUser}>
         <label htmlFor="username">username:</label>
         <input
           type="text"
           id="username"
           placeholder="enter username"
-          onChange={(e) =>
-            setUserData((prev) => ({ ...prev, username: e.target.value }))
-          }
+          onChange={handleChange}
         />
         <label htmlFor="password">password:</label>
         <input
           type="text"
           id="password"
           placeholder="enter password"
-          onChange={(e) =>
-            setUserData((prev) => ({ ...prev, password: e.target.value }))
-          }
+          onChange={handleChange}
         />
         <label htmlFor="email">email:</label>
         <input
           type="text"
           id="email"
           placeholder="enter email"
-          onChange={(e) =>
-            setUserData((prev) => ({ ...prev, email: e.target.value }))
-          }
+          onChange={handleChange}
         />
         <label htmlFor="firstname">firstname:</label>
         <input
           type="text"
           id="firstname"
           placeholder="enter firstname"
-          onChange={(e) =>
-            setUserData((prev) => ({ ...prev, firstname: e.target.value }))
-          }
+          onChange={handleChange}
         />
         <label htmlFor="lastname">lastname:</label>
         <input
           type="text"
           id="lastname"
           placeholder="enter lastname"
-          onChange={(e) =>
-            setUserData((prev) => ({ ...prev, lastname: e.target.value }))
-          }
+          onChange={handleChange}
         />
-        <button type="submit">add username</button>
+        <button type="submit" className="border ring-indigo-400 ring-2">
+          add username
+        </button>
       </form>
     </>
   );
