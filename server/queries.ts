@@ -1,3 +1,5 @@
+"use server";
+
 import { PrismaClient } from "@prisma/client";
 
 export type CreateUserPayload = {
@@ -13,13 +15,7 @@ const prisma = new PrismaClient();
 export async function createUser(payload: CreateUserPayload) {
   try {
     const user = await prisma.user.create({
-      data: {
-        username: payload.username,
-        firstname: payload.firstname,
-        lastname: payload.lastname,
-        email: payload.email,
-        password: payload.password,
-      },
+      data: payload,
     });
     return user;
   } catch (error) {
@@ -52,7 +48,7 @@ export async function getUserById(userId: number) {
 
 export async function deleteUserById(userId: number) {
   try {
-    return await prisma.user.delete({
+    await prisma.user.delete({
       where: {
         id: userId,
       },
@@ -63,18 +59,15 @@ export async function deleteUserById(userId: number) {
   }
 }
 
-export async function updateUser(userId: number, payload: CreateUserPayload) {
+export async function updateUser(
+  payload: CreateUserPayload & { userId: number }
+) {
   try {
-    await prisma.user.update({
+    return await prisma.user.update({
       where: {
-        id: userId,
+        id: payload.userId,
       },
-      data: {
-        username: payload.username,
-        password: payload.password,
-        firstname: payload.firstname,
-        lastname: payload.lastname,
-      },
+      data: payload,
     });
   } catch (error) {
     console.log(error);
