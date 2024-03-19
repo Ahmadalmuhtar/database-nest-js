@@ -1,16 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { CreateUserPayload, createUser } from "../../server/queries";
-import { resolve } from "path";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { z } from "zod";
+import InputForm from "../../components/Form";
 
 const schema = z.object({
+  username: z.string().min(10),
   email: z.string().email(),
   password: z.string().min(8),
-  username: z.string(),
   firstname: z.string(),
   lastname: z.string(),
 });
@@ -22,108 +20,86 @@ export default function Home() {
     register,
     handleSubmit,
     setError,
-    formState: { errors, isSubmitting },
+    formState: { isSubmitting, errors },
   } = useForm<FormFields>({
-    defaultValues: {
-      email: "test@email.com",
-      username: "Ahmad Naser Almuhtar",
-      password: "12345678",
-    },
     resolver: zodResolver(schema),
   });
-
-  const initialState = {
-    username: "",
-    firstname: "",
-    lastname: "",
-    email: "",
-    password: "",
-  };
-
-  const [userData, setUserData] = useState<CreateUserPayload>(initialState);
-
-  const handleCreateUser = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await createUser(userData);
-    setUserData(initialState);
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUserData((prev) => ({ ...prev, [e.target.id]: e.target.value }));
-  };
 
   const onSubmit: SubmitHandler<FormFields> = async (data) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       console.log(data);
     } catch (error) {
-      setError("root", { message: "email is taken" });
+      setError("root", { message: "Error submitting the data" });
     }
   };
 
   return (
     <>
       <form
-        className="flex flex-col max-w-full mx-auto justify-center items-center space-y-1 text-center"
-        method="POST"
         onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col justify-center items-center py-4 space-y-5 mx-auto max-w-full"
       >
-        <label htmlFor="username">username:</label>
         <input
-          {...register("username", { required: true })}
-          className="ring-1 ring-black"
+          {...register("username")}
           type="text"
-          id="username"
+          placeholder="enter your username"
         />
-        {errors.username && (
-          <div className="text-red-600">{errors.username.message}</div>
+        {errors.username ? (
+          <div className="text-red-500 opacity-75">
+            {errors.username.message}
+          </div>
+        ) : (
+          <div className="text-sm text-indigo-600 opacity-25">
+            Username must be at least 10 Characters!
+          </div>
         )}
-        <label htmlFor="password">password:</label>
-        <input
-          {...register("password")}
-          className="ring-1 ring-black"
-          type="password"
-          id="password"
-        />
-        {errors.password && (
-          <div className="text-red-600">{errors.password.message}</div>
-        )}
-        <label htmlFor="email">email:</label>
         <input
           {...register("email")}
-          className="ring-1 ring-black"
           type="text"
-          id="email"
+          placeholder="enter your email"
         />
-        {errors.email && (
-          <div className="text-red-600">{errors.email.message}</div>
+        {errors.email ? (
+          <div className="text-red-500 opacity-75">{errors.email.message}</div>
+        ) : (
+          <h6 className="text-sm text-indigo-600 opacity-25">
+            enter a valid Email
+          </h6>
         )}
-        <label htmlFor="firstname">firstname:</label>
+        <input
+          {...register("password")}
+          type="text"
+          placeholder="enter your password"
+        />
+        {errors.password ? (
+          <div className="text-red-500 opacity-75">
+            {errors.password.message}
+          </div>
+        ) : (
+          <h6 className="text-sm text-indigo-600 opacity-25">
+            Password must be at least 8 Characters
+          </h6>
+        )}
         <input
           {...register("firstname")}
-          className="ring-1 ring-black"
           type="text"
-          id="firstname"
+          placeholder="enter your firstname"
         />
-        <label htmlFor="lastname">lastname:</label>
         <input
           {...register("lastname")}
-          className="ring-1 ring-black"
           type="text"
-          id="lastname"
+          placeholder="enter your lastname"
         />
-        <div className="pt-4">
-          <button
-            disabled={isSubmitting}
-            type="submit"
-            className="border ring-indigo-400 ring-2"
-          >
-            {isSubmitting ? "Loading..." : "Create"}
-          </button>
-          {errors.root && (
-            <div className="text-red-600">{errors.root.message}</div>
-          )}
-        </div>
+        <button
+          disabled={isSubmitting}
+          type="submit"
+          className="ring-indigo-400 ring-4 rounded-full "
+        >
+          {isSubmitting ? <div>Loading...</div> : <div>Submit</div>}
+        </button>
+        {errors.root && (
+          <div className="text-red-500">{errors.root.message}</div>
+        )}
       </form>
     </>
   );
